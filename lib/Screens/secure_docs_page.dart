@@ -23,7 +23,7 @@ class _SecureDocsPageState extends State<SecureDocsPage> {
   final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(
       encryptedSharedPreferences: true,
-      // resetOnError: true giúp reset lại nếu key bị lỗi do cài lại app
+      sharedPreferencesName: 'tourismapp_vault_v3', // Đổi tên file để né dữ liệu kẹt
       resetOnError: true,
     ),
   );
@@ -110,9 +110,14 @@ class _SecureDocsPageState extends State<SecureDocsPage> {
       // Nếu đọc lại mà vẫn null, nghĩa là bộ nhớ bị kẹt -> Cần Reset toàn bộ
       if (verifyRead == null) {
         debugPrint("Ghi thất bại lần 1, tiến hành Reset Storage...");
-        await _storage.deleteAll(); // Xóa sạch sành sanh tất cả
-        await _storage.write(key: 'vault_pin', value: pin); // Ghi lại lần 2
-        verifyRead = await _storage.read(key: 'vault_pin'); // Check lại lần 2
+        try {
+          await _storage.deleteAll(); // Bọc try-catch riêng cho deleteAll
+        } catch (e) {
+          debugPrint("Xóa Storage cũ thất bại (bỏ qua): $e");
+        }
+
+        await _storage.write(key: 'vault_pin', value: pin);
+        verifyRead = await _storage.read(key: 'vault_pin');
       }
 
       if (verifyRead != pin) {

@@ -53,7 +53,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
 
       if (response.statusCode == 200) {
-        _toast("Mã xác thực đã được gửi đến email của bạn!");
+        _toast("Mã xác thực đã được gửi đến email của bạn! Kiểm tra mail spam nếu không thấy trong hộp thư đến");
         setState(() {
           _isOtpSent = true; // Chuyển sang giao diện nhập OTP
         });

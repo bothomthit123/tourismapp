@@ -1,10 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-/// API Client cho Tourism App
-/// - Android emulator -> http://10.0.2.2:5000
-/// - iOS simulator   -> http://localhost:5000
-/// - Device thật      -> http://<IP máy dev>:5000
 class ApiClient {
   final String baseUrl;
   final http.Client _client;
@@ -13,7 +9,8 @@ class ApiClient {
       : baseUrl = baseUrl ??
       const String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://10.0.2.2:5022/api',
+        defaultValue: 'http://10.0.2.2:5022/api', // Môi trường cho máy ảo
+        // Máy thật truy cập API 'http://traveltourism.somee.com' đã được deloy. Lưu ý tốc độ sẽ chậm.
       ),
         _client = client ?? http.Client();
   Future<Map<String, dynamic>> postJson(String path, Map<String, dynamic> body) async {

@@ -1,16 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-
-// Import các màn hình
 import 'package:tourismapp/screens/account_page.dart';
 import 'package:tourismapp/screens/home_page.dart';
 import 'package:tourismapp/screens/map_page.dart';
 import 'package:tourismapp/screens/place_page.dart';
 import 'package:tourismapp/screens/admin_page.dart';
-
 import 'package:tourismapp/Conts/api_config.dart';
-
+import 'package:tourismapp/Conts/crystal_theme.dart';
 class MainNavigation extends StatefulWidget {
   final int? accountId;
   final String? authToken;
@@ -22,7 +20,7 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0; // Mặc định vào Map_page
+  int _selectedIndex = 0; // Mặc định vào Home_page
   bool _loadingProfile = true;
 
   // Trạng thái Role
@@ -39,6 +37,33 @@ class _MainNavigationState extends State<MainNavigation> {
     _loadProfileIfNeeded();
   }
 
+  // --- [MỚI] HÀM HIỂN THỊ HỘP THOẠI XÁC NHẬN THOÁT ---
+  Future<bool?> _showExitDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Xác nhận thoát', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('Bạn có chắc chắn muốn thoát ứng dụng không?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Thoát', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+  // ---------------------------------------------------
+
   // Cấu hình mặc định cho User thường
   void _buildDefaultPages() {
     _pages = [
@@ -52,6 +77,7 @@ class _MainNavigationState extends State<MainNavigation> {
       BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person_rounded), label: 'Tài khoản'),
     ];
   }
+
   // Hàm dựng giao diện theo Role
   void _buildPagesForRole() {
     // TRƯỜNG HỢP 1: ADMIN
@@ -59,14 +85,12 @@ class _MainNavigationState extends State<MainNavigation> {
       _pages = [
         HomePage(accountId: widget.accountId, key: const PageStorageKey('home')),
         MapPage(accountId: widget.accountId, authToken: widget.authToken, key: const PageStorageKey('map')),
-        // Chuyển hướng vào AdminPage
         AdminPage(authToken: widget.authToken ?? ""),
         AccountPage(accountId: widget.accountId, authToken: widget.authToken),
       ];
       _navItems = const [
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home_rounded), label: 'Trang chủ'),
         BottomNavigationBarItem(icon: Icon(Icons.map_outlined), activeIcon: Icon(Icons.map_rounded), label: 'Bản đồ'),
-        // Icon khiên bảo vệ cho Admin
         BottomNavigationBarItem(icon: Icon(Icons.admin_panel_settings_outlined), activeIcon: Icon(Icons.admin_panel_settings), label: 'Quản trị'),
         BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person_rounded), label: 'Tài khoản'),
       ];
@@ -76,14 +100,12 @@ class _MainNavigationState extends State<MainNavigation> {
       _pages = [
         HomePage(accountId: widget.accountId, key: const PageStorageKey('home')),
         MapPage(accountId: widget.accountId, authToken: widget.authToken, key: const PageStorageKey('map')),
-        // Chuyển hướng vào PlacePage
         PlacePage(accountId: widget.accountId!, authToken: widget.authToken),
         AccountPage(accountId: widget.accountId, authToken: widget.authToken),
       ];
       _navItems = const [
         BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home_rounded), label: 'Trang chủ'),
         BottomNavigationBarItem(icon: Icon(Icons.map_outlined), activeIcon: Icon(Icons.map_rounded), label: 'Bản đồ'),
-        // Icon cặp táp cho Supplier
         BottomNavigationBarItem(icon: Icon(Icons.business_center_outlined), activeIcon: Icon(Icons.business_center_rounded), label: 'Quản lý'),
         BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person_rounded), label: 'Tài khoản'),
       ];
@@ -93,9 +115,9 @@ class _MainNavigationState extends State<MainNavigation> {
       _buildDefaultPages();
     }
 
-    // Reset index nếu list page thay đổi kích thước đột ngột
     if (_selectedIndex >= _pages.length) _selectedIndex = 0;
   }
+
   Future<void> _loadProfileIfNeeded() async {
     final token = widget.authToken;
     if (token == null || token.isEmpty) {
@@ -123,7 +145,6 @@ class _MainNavigationState extends State<MainNavigation> {
           data = Map<String, dynamic>.from(json);
         }
         final roleRaw = data?['role']?.toString().toLowerCase() ?? '';
-        // --- LOGIC XÁC ĐỊNH ROLE ---
         setState(() {
           _isAdmin = roleRaw == 'admin';
           _isSupplier = roleRaw == 'supplier';
@@ -144,7 +165,7 @@ class _MainNavigationState extends State<MainNavigation> {
       if (mounted) {
         setState(() {
           _loadingProfile = false;
-          _buildPagesForRole(); // Rebuild lại danh sách page sau khi có role
+          _buildPagesForRole();
         });
       }
     }
@@ -155,53 +176,70 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     if (_loadingProfile) {
-      // Màn hình chờ khi đang check role
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    //  Theme
     final primaryBlue = Theme.of(context).primaryColor;
-    const selectedBlue = Color(0xFF29B6F6);
+    const selectedBlue =  CrystalTheme.primaryBlue;
 
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _pages),
+    // ---  BỌC POPSCOPE BÊN NGOÀI SCAFFOLD ---
+    return PopScope(
+      canPop: false, // Ngăn chặn back mặc định
+      onPopInvokedWithResult: (bool didPop, Object? result) async {
+        if (didPop) return;
 
-      // --- NAVIGATION BAR CRYSTAL STYLE ---
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          boxShadow: [
-            BoxShadow(
-              color: primaryBlue.withOpacity(0.25),
-              blurRadius: 20,
-              spreadRadius: 0,
-              offset: const Offset(0, -5),
-            )
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          child: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            elevation: 0,
+        if (_selectedIndex != 0) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+          return;
+        }
 
-            selectedItemColor: selectedBlue,
-            unselectedItemColor: Colors.blueGrey[200],
+        // Nếu đã ở tab đầu tiên (Trang chủ), hiện xác nhận thoát app
+        final bool shouldExit = await _showExitDialog(context) ?? false;
+        if (shouldExit) {
+          SystemNavigator.pop(); // Thoát hẳn ứng dụng (thu nhỏ app)
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(index: _selectedIndex, children: _pages),
 
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: primaryBlue.withOpacity(0.25),
+                blurRadius: 20,
+                spreadRadius: 0,
+                offset: const Offset(0, -5),
+              )
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            child: BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.white,
+              elevation: 0,
 
-            showUnselectedLabels: true,
-            selectedFontSize: 12,
-            unselectedFontSize: 12,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+              selectedItemColor: selectedBlue,
+              unselectedItemColor: Colors.blueGrey[200],
 
-            items: _navItems,
+              currentIndex: _selectedIndex,
+              onTap: _onItemTapped,
+
+              showUnselectedLabels: true,
+              selectedFontSize: 12,
+              unselectedFontSize: 12,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+
+              items: _navItems,
+            ),
           ),
         ),
       ),

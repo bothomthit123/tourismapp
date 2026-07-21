@@ -14,7 +14,7 @@ import 'package:tourismapp/main.dart';
 import 'package:tourismapp/Models/download_config_provider.dart';
 import 'package:tourismapp/screens/offline_maps_page.dart';
 import 'package:tourismapp/Conts/crystal_theme.dart';
-
+import 'dart:io';
 
 // =======================================================
 // 1. MODELS & CLIENTS
@@ -669,6 +669,12 @@ class _MapPageState extends State<MapPage> {
 
       // 2. GỌI TÌM KIẾM BÊN NGOÀI (Foursquare/OSM)
       List<MapPlace> externalResults = [];
+      debugPrint("========== SEARCH ==========");
+      debugPrint("Keyword: $q");
+      debugPrint("Internal: ${internalResults.length}");
+      for (final p in internalResults) {
+        debugPrint("[IN] ${p.name}");
+      }
 
       // Chỉ tìm bên ngoài nếu map đã load xong bounds
       if (bounds != null && bounds.northEast != bounds.southWest) {
@@ -677,6 +683,11 @@ class _MapPageState extends State<MapPage> {
         } else {
           externalResults = await _searchOverpass(q, bounds);
         }
+      }
+
+      debugPrint("External: ${externalResults.length}");
+      for (final p in externalResults) {
+        debugPrint("[OUT] ${p.name}");
       }
 
       // 3. GỘP KẾT QUẢ (Ưu tiên kết quả nội bộ lên đầu)
@@ -726,30 +737,186 @@ class _MapPageState extends State<MapPage> {
       }
       final res = await _fsq.search(query: query, center: center, categories: categories);
       return _parseFsqResults(res);
-    } catch (e) { return []; }
+    } catch (e) {
+      debugPrint("Lỗi search Foursquare: $e");
+      return [];
+    }
   }
+  static const Map<String, List<String>> _osmSearchMap = {
+    // Cafe
+    'cafe': [
+      'amenity=cafe',
+      'shop=coffee',
+    ],
+    'coffee': [
+      'amenity=cafe',
+      'shop=coffee',
+    ],
+    'cà phê': [
+      'amenity=cafe',
+      'shop=coffee',
+    ],
 
-  Future<List<MapPlace>> _searchOverpass(String query, LatLngBounds bounds) async {
+    // Restaurant
+    'restaurant': [
+      'amenity=restaurant',
+      'amenity=fast_food',
+    ],
+    'nhà hàng': [
+      'amenity=restaurant',
+      'amenity=fast_food',
+    ],
+    'quán ăn': [
+      'amenity=restaurant',
+      'amenity=fast_food',
+    ],
+
+    // Hotel
+    'hotel': [
+      'tourism=hotel',
+      'tourism=guest_house',
+    ],
+    'khách sạn': [
+      'tourism=hotel',
+      'tourism=guest_house',
+    ],
+
+    // Hospital
+    'hospital': [
+      'amenity=hospital',
+    ],
+    'bệnh viện': [
+      'amenity=hospital',
+    ],
+
+    // ATM
+    'atm': [
+      'amenity=atm',
+    ],
+
+    // Bank
+    'bank': [
+      'amenity=bank',
+    ],
+    'ngân hàng': [
+      'amenity=bank',
+    ],
+
+    // School
+    'school': [
+      'amenity=school',
+    ],
+    'trường': [
+      'amenity=school',
+    ],
+
+    // Park
+    'park': [
+      'leisure=park',
+    ],
+    'công viên': [
+      'leisure=park',
+    ],
+
+    // Museum
+    'museum': [
+      'tourism=museum',
+    ],
+    'bảo tàng': [
+      'tourism=museum',
+    ],
+
+    // Temple
+    'temple': [
+      'amenity=place_of_worship',
+    ],
+    'chùa': [
+      'amenity=place_of_worship',
+    ],
+  };
+  Future<List<MapPlace>> _searchOverpass(
+      String query,
+      LatLngBounds bounds,
+      ) async {
     try {
-      final qLower = query.toLowerCase();
-      String? osmTag;
-      if (qLower.contains('cafe') || qLower.contains('cà phê')) osmTag = '"amenity"="cafe"';
-      else if (qLower.contains('restaurant') || qLower.contains('nhà hàng')) osmTag = '"amenity"="restaurant"';
-      else if (qLower.contains('hotel') || qLower.contains('khách sạn')) osmTag = '"tourism"="hotel"';
+      double s = bounds.southWest.latitude;
+      double w = bounds.southWest.longitude;
+      double n = bounds.northEast.latitude;
+      double e = bounds.northEast.longitude;
 
-      final bbox = '(${bounds.southWest.latitude},${bounds.southWest.longitude},${bounds.northEast.latitude},${bounds.northEast.longitude})';
-      String queryByName = 'nwr["name"~"$query",i]$bbox;';
-      String queryByTag = osmTag != null ? 'nwr[$osmTag]$bbox;' : "";
-      String finalQuery = '[out:json][timeout:10];($queryByName$queryByTag);(._;>;);out center;';
+      if ((n - s).abs() < 0.001) {
+        s -= 0.01;
+        n += 0.01;
+        w -= 0.01;
+        e += 0.01;
+      }
 
-      final resp = await http.post(Uri.parse('https://overpass-api.de/api/interpreter'), body: 'data=$finalQuery');
-      if (resp.statusCode != 200) throw Exception('Overpass ${resp.statusCode}');
-      return _parseOverpassResults(jsonDecode(resp.body));
-    } catch (e) { return []; }
+      final bbox = '$s,$w,$n,$e';
+
+      final qLower = query.toLowerCase().trim();
+      final escaped = query.replaceAll('"', '\\"');
+
+      List<String>? matchedTags;
+
+      for (final entry in _osmSearchMap.entries) {
+        if (qLower.contains(entry.key)) {
+          matchedTags = entry.value;
+          break;
+        }
+      }
+
+      String queryBody;
+
+      if (matchedTags != null) {
+        queryBody = matchedTags.map((tag) {
+          final parts = tag.split('=');
+
+          return 'nwr["${parts[0]}"="${parts[1]}"]($bbox);';
+        }).join('\n');
+      } else {
+        queryBody = '''
+      nwr["name"~"$escaped",i]($bbox);
+      ''';
+      }
+
+      final finalQuery = '''
+[out:json][timeout:25];
+(
+$queryBody
+);
+out center;
+''';
+
+      final uri = Uri.parse(
+        'https://overpass-api.de/api/interpreter',
+      );
+
+      final response = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'TourismApp/1.0',
+        },
+        body: {
+          'data': finalQuery,
+        },
+      );
+
+      if (response.statusCode != 200) {
+        return [];
+      }
+
+      final decoded = jsonDecode(response.body);
+
+      return _parseOverpassResults(decoded);
+    } catch (e) {
+      debugPrint('Overpass Error: $e');
+      return [];
+    }
   }
 
   List<MapPlace> _parseFsqResults(Map<String, dynamic> body) {
-    final results = (body['results'] as List? ?? []).cast<Map<String, dynamic>>();
+    final results = List<Map<String, dynamic>>.from(body['results'] ?? []);
     final places = <MapPlace>[];
     for (final m in results) {
       final id = m['fsq_id'] ?? m['fsq_place_id'];
@@ -767,7 +934,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   List<MapPlace> _parseOverpassResults(Map<String, dynamic> json) {
-    final elements = (json['elements'] as List? ?? []).cast<Map<String, dynamic>>();
+    final elements = List<Map<String, dynamic>>.from(json['elements'] ?? []);
     final places = <MapPlace>[];
     for (final m in elements) {
       final id = m['id']?.toString();

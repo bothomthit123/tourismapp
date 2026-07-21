@@ -106,7 +106,6 @@ class DownloadConfigurationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // === THÊM MỚI: Logic cho tính năng "Tự động Cache" ===
 
   // Mặc định là 'false' (tắt)
   bool _enableBrowsingCache = false;

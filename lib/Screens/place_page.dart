@@ -96,7 +96,7 @@ class _PlacePageState extends State<PlacePage> {
 
         setState(() {
           _places = data.map((item) => Place.fromJson(item))
-          // [QUAN TRỌNG] Lọc lại lần nữa để đảm bảo chỉ hiện Place của chính mình
+          // Lọc lại lần nữa để đảm bảo chỉ hiện Place của chính mình
           // Nếu API trả nhầm Place của người khác, dòng này sẽ loại bỏ nó.
               .where((p) => p.supplierId == _supplierId)
               .toList();
@@ -380,8 +380,6 @@ class _PlaceFormDialogState extends State<_PlaceFormDialog> {
       "closingHours": _closingTime != null ? _formatTime(_closingTime) : null,
       "latitude": _selectedCoords!.latitude,
       "longitude": _selectedCoords!.longitude,
-
-      // --- [FIX QUAN TRỌNG TẠI ĐÂY] ---
       // Nếu đang sửa thì giữ nguyên supplierId cũ, nếu thêm mới thì lấy từ tài khoản đang đăng nhập
       "supplierId": _isEditing ? widget.place!.supplierId : widget.supplierId,
     };

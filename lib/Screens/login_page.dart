@@ -27,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   // Cấu hình fix lỗi KeyStore trên Android
   AndroidOptions _getAndroidOptions() => const AndroidOptions(
     encryptedSharedPreferences: true,
+    sharedPreferencesName: 'tourismapp_secure_prefs_v2',
     resetOnError: true,
   );
 
@@ -72,21 +73,31 @@ class _LoginPageState extends State<LoginPage> {
           }
 
           if (!mounted) return;
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => MainNavigation(accountId: accountId, authToken: token)),
+            MaterialPageRoute(
+              builder: (_) => MainNavigation(accountId: accountId, authToken: token),
+            ),
+                (Route<dynamic> route) => false, // xóa sạch mọi trang trước đó
           );
         } else {
           setState(() { _errorMessage = "Đăng nhập thất bại: Token không hợp lệ."; _isLoading = false; });
         }
-      } else if (resp.statusCode == 401) {
-        setState(() { _errorMessage = 'Email hoặc mật khẩu không đúng.'; _isLoading = false; });
+      }
+      else if (resp.statusCode == 401) {
+        setState(() {
+          _errorMessage = 'Mật khẩu không đúng';
+          _isLoading = false;
+        });
+      }
+      else if (resp.statusCode == 404) {
+        setState(() { _errorMessage = 'Email không tồn tại. Vui lòng đăng ký tài khoản mới'; _isLoading = false; });
       } else {
         setState(() { _errorMessage = "Tài khoản bị khóa (${resp.statusCode})."; _isLoading = false; });
       }
     } catch (e) {
       debugPrint(">>>> LỖI KẾT NỐI: $e");
-      setState(() { _errorMessage = "Không thể kết nối đến máy chủ."; _isLoading = false; });
+      setState(() { _errorMessage = "Không thể kết nối đến máy chủ"; _isLoading = false; });
     }
   }
 

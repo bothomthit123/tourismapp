@@ -4,10 +4,9 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/foundation.dart';
 
-
 class FoursquareService {
-  final String apiKey; // Project API Key (không phải Legacy)
-  final String apiVersion; // dạng YYYY-MM-DD
+  final String apiKey;
+  final String apiVersion;
 
   FoursquareService({
     required this.apiKey,
@@ -21,14 +20,20 @@ class FoursquareService {
     required LatLng center,
     int limit = 15,
     int radius = 2000,
+    String? categories,
   }) async {
-    final uri = Uri.parse(
-        '$_endpoint'
-            '?query=${Uri.encodeComponent(query)}'
-            '&ll=${center.latitude},${center.longitude}'
-            '&limit=$limit'
-            '&radius=$radius'
-    );
+    String urlStr = '$_endpoint'
+        '?query=${Uri.encodeComponent(query)}'
+        '&ll=${center.latitude},${center.longitude}'
+        '&limit=$limit'
+        '&radius=$radius';
+
+    // Nối chuỗi category nếu có truyền vào
+    if (categories != null && categories.isNotEmpty) {
+      urlStr += '&categories=$categories';
+    }
+
+    final uri = Uri.parse(urlStr);
 
     final headers = {
       'Authorization': 'Bearer ${apiKey.trim()}',
@@ -44,6 +49,4 @@ class FoursquareService {
     }
     return jsonDecode(resp.body) as Map<String, dynamic>;
   }
-
-
 }

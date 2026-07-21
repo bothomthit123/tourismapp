@@ -7,9 +7,8 @@ import 'package:tourismapp/Models/download_provider.dart';
 import 'package:tourismapp/Models/region_selector_provider.dart';
 import 'package:tourismapp/Conts/crystal_theme.dart';
 import 'package:flutter/foundation.dart';
-// Import các màn hình
 import 'Screens/main_navigation.dart';
-// import 'screens/login_page.dart'; // (Có thể import nếu cần dùng sau này)
+// import 'screens/login_page.dart';
 
 // --- CẤU HÌNH CACHE TRUNG TÂM  ---
 const String kMainMapStoreName = 'tourismMapStore';
