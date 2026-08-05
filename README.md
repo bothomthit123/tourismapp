@@ -75,3 +75,16 @@ Flow data chart
 Results from the Internal Database, Foursquare, and (conditionally) OSM are parsed into a standardized MapPlace object model and merged into a single, unified dataset.
 5. Spatial Deduplication  
 Because data originates from multiple independent sources, overlapping locations are inevitable. The system applies a geospatial deduplication algorithm. It calculates the Great-Circle distance between coordinates; if two data points are located within a 20-meter radius ($d < 20m$) of each other, they are flagged as duplicates and merged to provide a clean, clutter-free user interface.
+## Screenshots
+Home Screen
+<img width="366" height="834" alt="Ảnh chụp màn hình 2025-11-24 210955" src="https://github.com/user-attachments/assets/8159208c-086c-4f92-a1ff-2a420baaf447" />
+Map Page with advertisements pop-up
+<img width="376" height="840" alt="Ảnh chụp màn hình 2025-11-24 213838" src="https://github.com/user-attachments/assets/50ee786d-ab70-4b26-991a-d575a2d44fd0" />
+Login Screen
+<img width="375" height="834" alt="Ảnh chụp màn hình 2025-11-24 210005" src="https://github.com/user-attachments/assets/04bcaf2a-997d-4e76-a334-8a414c8476d9" />
+Signup Screen
+<img width="377" height="837" alt="Ảnh chụp màn hình 2025-11-24 210140" src="https://github.com/user-attachments/assets/cb6e4b32-d258-4191-b338-b340f66fbcc1" />
+Map offline download Screen
+<img width="375" height="837" alt="image" src="https://github.com/user-attachments/assets/9f8fd094-7cc2-4543-bb47-b6d4749929a3" />
+Add Place Screen ( For Suppliers)
+<img width="375" height="836" alt="image" src="https://github.com/user-attachments/assets/0786af59-44c8-4a4e-878b-7acae14fc23c" />
