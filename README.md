@@ -75,21 +75,44 @@ Flow data chart
 Results from the Internal Database, Foursquare, and (conditionally) OSM are parsed into a standardized MapPlace object model and merged into a single, unified dataset.
 5. Spatial Deduplication  
 Because data originates from multiple independent sources, overlapping locations are inevitable. The system applies a geospatial deduplication algorithm. It calculates the Great-Circle distance between coordinates; if two data points are located within a 20-meter radius ($d < 20m$) of each other, they are flagged as duplicates and merged to provide a clean, clutter-free user interface.
+
 ## Screenshots
-Home Screen
--------------
-<img width="366" height="834" alt="Ảnh chụp màn hình 2025-11-24 210955" src="https://github.com/user-attachments/assets/8159208c-086c-4f92-a1ff-2a420baaf447" /> <br>
-Map Page with advertisements pop-up
-<img width="376" height="840" alt="Ảnh chụp màn hình 2025-11-24 213838" src="https://github.com/user-attachments/assets/50ee786d-ab70-4b26-991a-d575a2d44fd0" />
-<br>
-Login Screen
-<img width="375" height="834" alt="Ảnh chụp màn hình 2025-11-24 210005" src="https://github.com/user-attachments/assets/04bcaf2a-997d-4e76-a334-8a414c8476d9" />
-<br>
-Signup Screen
-<img width="377" height="837" alt="Ảnh chụp màn hình 2025-11-24 210140" src="https://github.com/user-attachments/assets/cb6e4b32-d258-4191-b338-b340f66fbcc1" />
-<br>
-Map offline download Screen
-<img width="375" height="837" alt="image" src="https://github.com/user-attachments/assets/9f8fd094-7cc2-4543-bb47-b6d4749929a3" />
-<br>
-Add Place Screen ( For Suppliers)
-<img width="375" height="836" alt="image" src="https://github.com/user-attachments/assets/0786af59-44c8-4a4e-878b-7acae14fc23c" />
+
+###  Home Screen
+
+<img width="366" height="834" alt="Ảnh chụp màn hình 2025-11-24 210955" src="https://github.com/user-attachments/assets/cddd1522-8a7a-46e0-b22f-f2511fa36c69" />
+
+
+---
+
+###  Map Screen (Advertisements Popup)
+
+<img width="376" height="840" alt="Ảnh chụp màn hình 2025-11-24 213838" src="https://github.com/user-attachments/assets/16d71b89-bf2c-4c1e-8ce6-a2e62c16a902" />
+
+
+---
+
+###  Login Screen
+
+<img width="375" height="834" alt="Ảnh chụp màn hình 2025-11-24 210005" src="https://github.com/user-attachments/assets/a61f521a-15a8-4808-8c94-222f29bc2f2e" />
+
+
+---
+
+###  Signup Screen
+
+<img width="377" height="837" alt="Ảnh chụp màn hình 2025-11-24 210140" src="https://github.com/user-attachments/assets/b1c258fa-f362-41c9-9eee-24ee84689e85" />
+
+
+---
+
+###  Offline Map Download
+
+<img width="375" height="837" alt="Ảnh chụp màn hình 2025-11-24 205837" src="https://github.com/user-attachments/assets/1b9f7506-62c2-4aad-b0c6-b0c6bc6b89fc" />
+
+
+---
+
+###  Add Place (Supplier)
+
+<img width="375" height="836" alt="Ảnh chụp màn hình 2025-11-24 211414" src="https://github.com/user-attachments/assets/af66b97e-437b-4c2d-859b-eb17024fe2ec" />
